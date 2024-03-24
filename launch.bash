@@ -4,11 +4,11 @@ angle=("1.57" "1.47" "1.37" "1.27" "1.17" "1.67" "1.77" "1.87" "1.97" "2.07")
 
 Nactor=1
 final_time=30
-Nruns=15
 init_robot_pose_x=-1
 init_robot_pose_y=-1
 init_robot_pose_theta=1.57
-seed=(60 61 62 63 64 65 66 67 68 69 70 71 72 73 74)
+# seed=(60 61 62 63 64 65 66 67 68 69 70 71 72 73 74)
+seed=(1)
 
 dt=0.1
 pred_step_size_multiplier=1
@@ -23,7 +23,9 @@ circle_sigma=0.1
 critic_period_multiplier=1
 
 ####################################################################################
-ctrl_mode=CALF #N_CTRL, MPC, CALF, SARSM
+ctrl_mode=CALF #N_CTRL, MPC, CALF, SARSA-m
+
+Nruns=15
 
 for ((i=0; i<${#seed[@]}; i++)); do
 
@@ -38,7 +40,7 @@ for ((i=0; i<${#seed[@]}; i++)); do
 done
 
 ####################################################################################
-ctrl_mode=SARSM #N_CTRL, MPC, CALF, SARSM
+ctrl_mode=SARSA-m #N_CTRL, MPC, CALF, SARSA-m
 
 Nruns=15
 
@@ -57,7 +59,7 @@ for ((i=0; i<${#seed[@]}; i++)); do
 done
 
 ####################################################################################
-ctrl_mode=N_CTRL #N_CTRL, MPC, CALF, SARSM
+ctrl_mode=N_CTRL #N_CTRL, MPC, CALF, SARSA-m
 
 Nruns=1
 
@@ -74,8 +76,9 @@ for ((i=0; i<${#seed[@]}; i++)); do
 done
 
 ####################################################################################
-ctrl_mode=MPC #N_CTRL, MPC, CALF, SARSM
-Nactor=(10 15 20 25 30 35 40 45 50 55 60)
+ctrl_mode=MPC #N_CTRL, MPC, CALF, SARSA-m
+# Nactor=(10 15 20 25 30 35 40 45 50 55 60)
+Nactor=(25)
 Nruns=1
 
 for ((i=0; i<${#Nactor[@]}; i++)); do

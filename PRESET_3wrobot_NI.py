@@ -43,7 +43,7 @@ parser.add_argument('--ctrl_mode', metavar='ctrl_mode', type=str,
                              'RLStabLyap',
                              "CALF",
                              "N_CTRL",
-                             "SARSM"],
+                             "SARSA-m"],
                     default='MPC',
                     help='Control mode. Currently available: ' +
                     '----manual: manual constant control specified by action_manual; ' +
@@ -132,23 +132,27 @@ parser.add_argument('--actor_struct', type=str,
                     '----quad-lin: quadratic-linear; ' +
                     '----quadratic: quadratic; ' +
                     '----quad-nomix: quadratic, no mixed terms.')
-
 parser.add_argument('--init_robot_pose_x', type=float,
-                    default=0.0)
+                    default=0.0,
+                    help='Initial x-coordinate of the robot pose.')
 parser.add_argument('--init_robot_pose_y', type=float,
-                    default=0.0)
+                    default=0.0,
+                    help='Initial y-coordinate of the robot pose.')
 parser.add_argument('--init_robot_pose_theta', type=float,
-                    default=0.0)
-
+                    default=0.0,
+                    help='Initial orientation angle (in radians) of the robot pose.')
 parser.add_argument('--circle_x', type=float,
-                    default=0.0)
+                    default=0.0,
+                    help='X-coordinate of the center of the circle.')
 parser.add_argument('--circle_y', type=float,
-                    default=0.0)
+                    default=0.0,
+                    help='Y-coordinate of the center of the circle.')
 parser.add_argument('--circle_sigma', type=float,
-                    default=0.0)
+                    default=0.0,
+                    help='Standard deviation (sigma) of the circle.')
 parser.add_argument('--seed', type=int,
-                    default=1)
-
+                    default=1,
+                    help='Seed for random number generation.')
 
 args = parser.parse_args()
 
@@ -172,10 +176,7 @@ while theta < -np.pi:
 for k in range(len(args.state_init)):
     args.state_init[k] = eval( args.state_init[k].replace('pi', str(np.pi)) )
 
-# args.state_init = np.array(args.state_init)
 args.state_init = np.array([x, y, theta])
-
-# print("Start position: ", args.state_init)
 
 args.action_manual = np.array(args.action_manual)
 
@@ -183,8 +184,7 @@ pred_step_size = args.dt * args.pred_step_size_multiplier
 critic_period = args.dt * args.critic_period_multiplier
 
 
-
-if args.ctrl_mode == "SARSM":
+if args.ctrl_mode == "SARSA-m":
     args.R1_diag = [1, 1, 1e-3, 0, 0]
     print(args.R1_diag)
 R1 = np.diag(np.array(args.R1_diag))
@@ -243,7 +243,7 @@ alpha_deg_0 = alpha0/2/np.pi
 #----------------------------------------Initialization : : model
 
 #----------------------------------------Initialization : : controller
-my_ctrl_nominal = None #controllers.ControllerDisasm3wrobotNI(ctrl_gain=0.5, ctrl_bnds=ctrl_bnds, t0=t0, sampling_time=dt)
+my_ctrl_nominal = None 
 
 # Predictive optimal controller
 my_ctrl_opt_pred = controllers.ControllerOptimalPredictive(dim_input,
@@ -323,7 +323,7 @@ for k in range(0, Nruns):
             writer.writerow(['critic_period_multiplier', str(critic_period_multiplier) ] )
             writer.writerow(['critic_struct', str(critic_struct) ] )
             writer.writerow(['actor_struct', str(actor_struct) ] )   
-            writer.writerow(['t [s]', 'x [m]', 'y [m]', 'alpha [rad]', 'run_obj', 'accum_obj', 'v [m/s]', 'omega [rad/s]', "count CALF", "count nominal"] )
+            writer.writerow(['t [s]', 'x [m]', 'y [m]', 'alpha [rad]', 'run_obj', 'accum_obj', 'v [m/s]', 'omega [rad/s]', "N Calf/SARSA-m", "N nominal"] )
 
 # Do not display annoying warnings when print is on
 if is_print_sim_step:
@@ -408,7 +408,7 @@ else:
             my_logger.log_data_row(datafile, t, xCoord, yCoord, alpha, run_obj, accum_obj, action, count_CALF, count_N_CTRL)
         
 
-        if t >= t1:# or (np.linalg.norm(np.square(observation[:2])) < 0.1 and abs(observation[2]) < 0.1):
+        if t >= t1 or np.linalg.norm(observation[:2]) < 0.2:
 
             # Reset simulator
             my_simulator.reset()

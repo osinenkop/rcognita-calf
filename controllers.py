@@ -275,29 +275,6 @@ class ControllerOptimalPredictive:
                     - 4th order :math:`\\left( \\chi^\\top \\right)^2 R_2 \\left( \\chi \\right)^2 + \\chi^\\top R_1 \\chi`, where :math:`\\chi = [observation, action]`, ``run_obj_pars``
                     should be ``[R1, R2]``
             """        
-############################
-        self.a1 = dim_input
-        self.a2 = dim_output
-        self.a3 = mode
-        self.a4 = ctrl_bnds
-        self.a5 = action_init
-        self.a6 = t0
-        self.a7 = sampling_time
-        self.a8 = Nactor
-        self.a9 = pred_step_size
-        self.a10 = sys_rhs
-        self.a11 = sys_out
-        self.a12 = state_sys
-        self.a13 = buffer_size
-        self.a14 = gamma
-        self.a15 = Ncritic
-        self.a16 = critic_period
-        self.a17 = critic_struct
-        self.a18 = run_obj_struct
-        self.a19 = run_obj_pars
-        self.a20 = observation_target
-        self.a21 = state_init
-##############################  
 
         np.random.seed(seed)
         print(seed)
@@ -395,10 +372,10 @@ class ControllerOptimalPredictive:
         self.w_critic_buffer_LG = []
         self.N_CTRL = N_CTRL(ctrl_bnds)
 
-        if self.mode == "SARSM":
-            self.coef_for_alpha_low = 1e-2 #1e-1
-            self.coef_for_alpha_up = 1e4 #1e3
-            self.nu = 1e-4 #1e-5
+        if self.mode == "SARSA-m":
+            self.coef_for_alpha_low = 1e-2 
+            self.coef_for_alpha_up = 1e4 
+            self.nu = 1e-4 
         elif self.mode == "CALF":
             self.coef_for_alpha_low = 1e-1
             self.coef_for_alpha_up = 1e3
@@ -428,124 +405,45 @@ class ControllerOptimalPredictive:
         All the learned parameters are retained.
         
         """        
-        dim_input = self.a1
-        dim_output = self.a2
-        mode = self.a3
-        ctrl_bnds = self.a4
-        action_init = self.a5
-        t0 = self.a6
-        sampling_time = self.a7
-        Nactor = self.a8
-        pred_step_size = self.a9
-        sys_rhs = self.a10
-        sys_out = self.a11
-        state_sys = self.a12
-        buffer_size = self.a13
-        gamma = self.a14
-        Ncritic = self.a15
-        critic_period = self.a16
-        critic_struct = self.a17
-        run_obj_struct = self.a18
-        run_obj_pars = self.a19
-        observation_target = self.a20
-        state_init = self.a21
 
-        self.ctrl_clock = t0
-        
-        self.sampling_time = sampling_time
-        
         # Controller: common
-        self.state_init = []
 
-        if len(action_init) == 0:
+        if len(self.action_init) == 0:
             self.action_curr = self.action_min/10
             self.action_sqn_init = rep_mat( self.action_min/10 , 1, self.Nactor)
             self.action_init = self.action_min/10
         else:
-            self.action_curr = action_init
-            self.action_sqn_init = rep_mat( action_init , 1, self.Nactor)
+            self.action_curr = self.action_init
+            self.action_sqn_init = rep_mat( self.action_init , 1, self.Nactor)
         
-        self.action_buffer = np.zeros( [buffer_size, dim_input] )
-        self.observation_buffer = np.zeros( [buffer_size, dim_output] )        
-        
-        # Exogeneous model's things
-        self.sys_rhs = sys_rhs
-        self.sys_out = sys_out
-        self.state_sys = state_sys   
-        
-        # Learning-related things
-        self.buffer_size = buffer_size
-        self.critic_clock = t0
-        self.gamma = gamma
-        self.Ncritic = Ncritic
-        self.Ncritic = np.min([self.Ncritic, self.buffer_size-1]) # Clip critic buffer size
-        self.critic_period = critic_period
-        self.critic_struct = critic_struct
-        self.run_obj_struct = run_obj_struct
-        self.run_obj_pars = run_obj_pars
-        self.observation_target = observation_target
+        self.action_buffer = np.zeros( [self.buffer_size, self.dim_input] )
+        self.observation_buffer = np.zeros( [self.buffer_size, self.dim_output] )        
 
-        if self.critic_struct == 'quad-lin':
-            self.dim_critic = int( ( ( self.dim_output + self.dim_input ) + 1 ) * ( self.dim_output + self.dim_input )/2 + (self.dim_output + self.dim_input) ) 
-            self.Wmin = -1e3*np.ones(self.dim_critic) 
-            self.Wmax = 1e3*np.ones(self.dim_critic) 
-        elif self.critic_struct == 'quadratic':
-            self.dim_critic = int( ( ( self.dim_output + self.dim_input ) + 1 ) * ( self.dim_output + self.dim_input )/2 )
-            self.Wmin = np.zeros(self.dim_critic) 
-            self.Wmax = 1e3*np.ones(self.dim_critic)    
-        elif self.critic_struct == 'quad-nomix':
-            self.dim_critic = self.dim_output + self.dim_input
-            self.Wmin = np.zeros(self.dim_critic) 
-            self.Wmax = 1e3*np.ones(self.dim_critic)    
-        elif self.critic_struct == 'quad-mix':
-            self.dim_critic = int( self.dim_output + self.dim_output * self.dim_input + self.dim_input )
-            self.Wmin = -1e3*np.ones(self.dim_critic)  
-            self.Wmax = 1e3*np.ones(self.dim_critic) 
-        elif self.critic_struct == 'poly3':
-            self.dim_critic = int( ( ( self.dim_output + self.dim_input ) + 1 ) * ( self.dim_output + self.dim_input ) )
-            self.Wmin = -1e3*np.ones(self.dim_critic)  
-            self.Wmax = 1e3*np.ones(self.dim_critic) 
-        elif self.critic_struct == 'poly4':
-            self.dim_critic = int( ( ( self.dim_output + self.dim_input ) + 1 ) * ( self.dim_output + self.dim_input )/2 * 3)
-            self.Wmin = np.zeros(self.dim_critic) 
-            self.Wmax = np.ones(self.dim_critic) 
+        self.critic_clock = t0
+        self.ctrl_clock = t0
 
 ##############################################################################  Reset last good buffers
-        self.observation_LG = state_init
+        self.observation_LG = self.state_init
         self.action_LG = self.action_sqn_init
 
         self.action_buffer_LG = np.zeros( [self.buffer_size, self.dim_input] )
         self.observation_buffer_LG = np.zeros( [self.buffer_size, self.dim_output] )   
 
-        self.state_init = state_init    
-
         self.count_CALF = 0    
         self.count_N_CTRL = 0   
 ############################################################
         total_sum = 0
-        N = len(self.w_critic_buffer_LG)  # Получаем количество элементов из массива
-
-        # Цикл для вычисления суммы с весами
+        N = len(self.w_critic_buffer_LG)  
         for i, w_i in enumerate(self.w_critic_buffer_LG, start=0):
             total_sum += (self.critic_init_fading_factor ** i) * w_i
-
-        # Вычисление среднего значения
         if N != 0:
             weighted_average = total_sum / N
         else:
             weighted_average = self.w_critic_init
 
-        # print("critic_init_1", self.w_critic_init)
-
         Delta_w =  weighted_average - self.w_critic_init
-        # self.w_critic_init = self.w_critic_init + self.delta_w_factor * Delta_w
-        # self.w_critic_LG = self.w_critic_init
 
-        # # self.w_critic_init = self.w_critic_LG
-        # print("critic_init_2", self.w_critic_init)
-        # print("critic_LG", self.w_critic_LG)
-        
-#обновление по лучшему крайнему косту
+# Weights update
 ############################################################
         if self.mode == "CALF":
         # Uncomment to activate initial weight update based on a cost improvement criterion
@@ -557,7 +455,7 @@ class ControllerOptimalPredictive:
             else:
                 # self.w_critic_init = self.w_critic_init_LG
                 self.w_critic_init = self.w_critic_init_LG + self.delta_w_factor * np.clip( self.Wmax/5 * np.random.normal(size=self.dim_critic), self.Wmin, self.Wmax )
-        elif self.mode == "SARSM":
+        elif self.mode == "SARSA-m":
             print(f"Final cost:    {self.accum_obj_val:.2f}" + f"    Best cost:    {self.accum_obj_val_LG:.2f}")
             self.accum_obj_val_LG = self.accum_obj_val
             self.w_critic_init_LG = self.w_critic_init
@@ -730,7 +628,7 @@ class ControllerOptimalPredictive:
         
         bnds = sp.optimize.Bounds(self.Wmin, self.Wmax, keep_feasible=True)
 
-        if self.mode == "SARSM":
+        if self.mode == "SARSA-m":
             max_desirable_CALF_decay_rate = 0.1
             final_constraints.append(sp.optimize.NonlinearConstraint(lambda w_critic: CALF_constr_1(observation=observation, action=action, w_critic=w_critic), 
                                                                      -max_desirable_CALF_decay_rate * self.sampling_time, -self.nu * self.sampling_time))
@@ -803,7 +701,7 @@ class ControllerOptimalPredictive:
         elif self.mode=='SQL':     # RL: stacked Q-learning
              for k in range(self.Nactor): 
                 Q = self._critic(observation_sqn[k, :], my_action_sqn[k, :], self.w_critic)
-        elif self.mode == "CALF" or self.mode == "SARSM":
+        elif self.mode == "CALF" or self.mode == "SARSA-m":
              for k in range(self.Nactor):                
                 Q = self._critic(observation_sqn[k, :], my_action_sqn[k, :], self.w_critic_LG) 
                 J += Q 
@@ -974,7 +872,7 @@ class ControllerOptimalPredictive:
                     self.count_N_CTRL = self.count_N_CTRL + 1
                     action = self.N_CTRL.pure_loop(observation)
 
-            elif self.mode == "SARSM":
+            elif self.mode == "SARSA-m":
                 self.observation_buffer = push_vec(self.observation_buffer, observation)
                 self.action_buffer = push_vec(self.action_buffer, self.action_curr)
 
@@ -1008,7 +906,7 @@ class ControllerOptimalPredictive:
                     self.action_buffer_LG = push_vec(self.action_buffer_LG, action)
 
                     self.count_CALF = self.count_CALF + 1
-                    print("\033[93m") # Color it to indicate SARSM
+                    print("\033[93m") # Color it to indicate SARSA-m
                 else: 
                     print("\033[0m")
                     self.count_N_CTRL = self.count_N_CTRL + 1
