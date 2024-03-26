@@ -7,8 +7,8 @@ final_time=30
 init_robot_pose_x=-1
 init_robot_pose_y=-1
 init_robot_pose_theta=1.57
-# seed=(60 61 62 63 64 65 66 67 68 69 70 71 72 73 74)
-seed=(1)
+seed=(60 61 62 63 64 65 66 67 68 69 70 71 72 73 74)
+# seed=(1)
 
 dt=0.1
 
@@ -73,8 +73,8 @@ done
 
 ####################################################################################
 ctrl_mode=MPC #N_CTRL, MPC, CALF, SARSA-m
-# Nactor=(10 15 20 25 30 35 40 45 50 55 60)
-Nactor=(25)
+Nactor=(10 15 20 25 30 35 40 45 50 55 60)
+# Nactor=(25)
 Nruns=1
 
 for ((i=0; i<${#Nactor[@]}; i++)); do
