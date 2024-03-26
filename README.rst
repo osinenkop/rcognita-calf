@@ -290,7 +290,7 @@ The naming convention is ``PRESET_ACRONYM``, where ``ACRONYM`` is actually relat
 
 
 
-To reproduce the results of the scientific article, you need to execute the script:
+To reproduce the results, you need to execute the script:
 ::
 
     bash launch.bash
