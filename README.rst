@@ -288,6 +288,18 @@ This will call the preset with default settings, description of which can be fou
 
 The naming convention is ``PRESET_ACRONYM``, where ``ACRONYM`` is actually related to the system (environment). You may create your own by analogy.
 
+
+
+To reproduce the results of the scientific article, you need to execute the script:
+::
+
+    bash launch.bash
+
+**Attention!**
+
+Results may vary on different machines (this may be related to the Python's internal libraries, numpy foremost)
+
+
 For configuration of hyper-parameters, just call help on the required preset, say,
 
 ::
@@ -302,35 +314,45 @@ Settings
 Some key settings are described below (full description is available via
 ``-h`` option).
 
-+-------------------------+-----------+--------------------------------------------------------+
-| Parameter               | Type      | Description                                            |
-+=========================+===========+========================================================+
-| ``ctrl_mode``           | string    | Controller mode                                        |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``dt``                  | number    | Controller sampling time                               |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``t1``                  | number    | Final time                                             |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``state_init``          | list      | Initial state                                          |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``is_log_data``         | binary    | Flag to log data                                       |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``is_visualization``    | binary    | Flag to produce graphical output                       |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``is_print_sim_step``   | binary    | Flag to print simulation step data                     |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``Nactor``              | integer   | Horizon length (in steps) for predictive controllers   |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``run_obj_struct``      | string    | Structure of running objective function                |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``Ncritic``             | integer   | Critic stack size (number of TDs)                      |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``gamma``               | number    | Discount factor                                        |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``critic_struct``       | string    | Structure of critic features                           |
-+-------------------------+-----------+--------------------------------------------------------+
-| ``actor_struct``        | string    | Structure of actor features                            |
-+-------------------------+-----------+--------------------------------------------------------+
++-----------------------------+-----------+----------------------------------------------------------+
+| Parameter                   | Type      | Description                                              |
++=============================+===========+==========================================================+
+| ``ctrl_mode``               | string    | Controller mode                                          |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``dt``                      | number    | Controller sampling time                                 |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``t1``                      | number    | Final time                                               |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``init_robot_pose_x``       | number    | initial state along the X axis                           |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``init_robot_pose_y``       | number    | initial state along the Y axis                           |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``init_robot_pose_theta``   | number    | initial orientation angle (in radians) of the robot pose |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``distortion_pos_x``        | number    | X-coordinate of the center of distortion                 |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``distortion_pos_y``        | number    | Y-coordinate of the center of distortion                 |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``distortion_sigma``        | number    | Standard deviation of distortion                         |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``is_log_data``             | integer   | Flag to log data (0/1)                                   |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``is_visualization``        | integer   | Flag to produce graphical output (0/1)                   |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``is_print_sim_step``       | integer   | Flag to print simulation step data (0/1)                 |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``Nactor``                  | integer   | Horizon length (in steps) for predictive controllers     |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``run_obj_struct``          | string    | Structure of running objective function                  |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``Ncritic``                 | integer   | Critic stack size (number of TDs)                        |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``gamma``                   | number    | Discount factor                                          |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``critic_struct``           | string    | Structure of critic features                             |
++-----------------------------+-----------+----------------------------------------------------------+
+| ``actor_struct``            | string    | Structure of actor features                              |
++-----------------------------+-----------+----------------------------------------------------------+
 
 Advanced customization
 ----------------------

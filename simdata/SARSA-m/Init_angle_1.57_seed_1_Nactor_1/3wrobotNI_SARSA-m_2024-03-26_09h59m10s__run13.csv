@@ -1,0 +1,16 @@
+System,3wrobotNI
+Controller,SARSA-m
+dt,0.1
+state_init,[-1.   -1.    1.57]
+Nactor,1
+pred_step_size_multiplier,1.0
+buffer_size,25
+run_obj_struct,quadratic
+R1_diag,"[1, 1, 0.001, 0, 0]"
+R2_diag,"[1, 10, 1, 0, 0]"
+Ncritic,25
+gamma,0.99
+critic_period_multiplier,1.0
+critic_struct,quad-mix
+actor_struct,quad-nomix
+t [s],x [m],y [m],alpha [rad],run_obj,accum_obj,v [m/s],omega [rad/s],N Calf/SARSA-m,N nominal

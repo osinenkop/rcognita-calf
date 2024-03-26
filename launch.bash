@@ -11,16 +11,15 @@ init_robot_pose_theta=1.57
 seed=(1)
 
 dt=0.1
-pred_step_size_multiplier=1
+
 is_visualization=1 
 buffer_size=25 
 Ncritic=25 
 gamma=0.9
 critic_struct=quad-mix
-circle_x_pos=-0.6
-circle_y_pos=-0.5
-circle_sigma=0.1
-critic_period_multiplier=1
+distortion_pos_x=-0.6
+distortion_pos_y=-0.5
+distortion_sigma=0.1
 
 ####################################################################################
 ctrl_mode=CALF #N_CTRL, MPC, CALF, SARSA-m
@@ -31,11 +30,10 @@ for ((i=0; i<${#seed[@]}; i++)); do
 
     echo -e "\033[32m ======================= TEST Number: $((k=$k+1)) ======================= \033[0m"
 
-    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor --pred_step_size_multiplier $pred_step_size_multiplier \
+    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor \
     --ctrl_mode $ctrl_mode --Nruns $Nruns --init_robot_pose_x $init_robot_pose_x --init_robot_pose_y $init_robot_pose_y \
-    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --circle_x $circle_x_pos --circle_y $circle_y_pos --circle_sigma $circle_sigma \
-    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]} \
-    --critic_period_multiplier $critic_period_multiplier
+    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --distortion_x $distortion_pos_x --distortion_y $distortion_pos_y --distortion_sigma $distortion_sigma \
+    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]}
     
 done
 
@@ -50,11 +48,10 @@ for ((i=0; i<${#seed[@]}; i++)); do
 
     echo -e "\033[32m ======================= TEST Number: $((k=$k+1)) ======================= \033[0m"
 
-    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor --pred_step_size_multiplier $pred_step_size_multiplier \
+    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor \
     --ctrl_mode $ctrl_mode --Nruns $Nruns --init_robot_pose_x $init_robot_pose_x --init_robot_pose_y $init_robot_pose_y \
-    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --circle_x $circle_x_pos --circle_y $circle_y_pos --circle_sigma $circle_sigma \
-    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]} \
-    --critic_period_multiplier $critic_period_multiplier
+    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --distortion_x $distortion_pos_x --distortion_y $distortion_pos_y --distortion_sigma $distortion_sigma \
+    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]}
     
 done
 
@@ -67,11 +64,10 @@ for ((i=0; i<${#seed[@]}; i++)); do
 
     echo -e "\033[32m ======================= TEST Number: $((k=$k+1)) ======================= \033[0m"
 
-    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor --pred_step_size_multiplier $pred_step_size_multiplier \
+    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor \
     --ctrl_mode $ctrl_mode --Nruns $Nruns --init_robot_pose_x $init_robot_pose_x --init_robot_pose_y $init_robot_pose_y \
-    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --circle_x $circle_x_pos --circle_y $circle_y_pos --circle_sigma $circle_sigma \
-    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]} \
-    --critic_period_multiplier $critic_period_multiplier
+    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --distortion_x $distortion_pos_x --distortion_y $distortion_pos_y --distortion_sigma $distortion_sigma \
+    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]}
     
 done
 
@@ -85,10 +81,9 @@ for ((i=0; i<${#Nactor[@]}; i++)); do
 
     echo -e "\033[32m ======================= TEST Number: $((k=$k+1)) ======================= \033[0m"
 
-    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor ${Nactor[i]} --pred_step_size_multiplier $pred_step_size_multiplier \
+    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor ${Nactor[i]} \
     --ctrl_mode $ctrl_mode --Nruns $Nruns --init_robot_pose_x $init_robot_pose_x --init_robot_pose_y $init_robot_pose_y \
-    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --circle_x $circle_x_pos --circle_y $circle_y_pos --circle_sigma $circle_sigma \
-    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed $seed \
-    --critic_period_multiplier $critic_period_multiplier
+    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --distortion_x $distortion_pos_x --distortion_y $distortion_pos_y --distortion_sigma $distortion_sigma \
+    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed $seed
     
 done

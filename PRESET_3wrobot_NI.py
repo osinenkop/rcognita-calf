@@ -44,7 +44,7 @@ parser.add_argument('--ctrl_mode', metavar='ctrl_mode', type=str,
                              "CALF",
                              "N_CTRL",
                              "SARSA-m"],
-                    default='MPC',
+                    default='CALF',
                     help='Control mode. Currently available: ' +
                     '----manual: manual constant control specified by action_manual; ' +
                     '----nominal: nominal controller, usually used to benchmark optimal controllers;' +                     
@@ -53,38 +53,34 @@ parser.add_argument('--ctrl_mode', metavar='ctrl_mode', type=str,
                     '----SQL: stacked Q-learning; ' + 
                     '----RLStabLyap: (experimental!) learning agent with Lyapunov-like stabilizing contraints.')
 parser.add_argument('--dt', type=float, metavar='dt',
-                    default=0.01,
+                    default=0.1,
                     help='Controller sampling time.' )
 parser.add_argument('--t1', type=float, metavar='t1',
-                    default=20,
+                    default=30,
                     help='Final time of episode.' )
 parser.add_argument('--Nruns', type=int,
-                    default=3,
+                    default=15,
                     help='Number of episodes. Learned parameters are not reset after an episode.')
-parser.add_argument('--state_init', type=str, nargs="+", metavar='state_init',
-                    default=['-5', '-5', '-pi/2'],
-                    help='Initial state (as sequence of numbers); ' + 
-                    'dimension is environment-specific!')
-parser.add_argument('--is_log_data', type=bool,
-                    default=True,
+parser.add_argument('--is_log_data', type=int,
+                    default=1,
                     help='Flag to log data into a data file. Data are stored in simdata folder.')
 parser.add_argument('--is_visualization', type=int,
                     default=1,
                     help='Flag to produce graphical output.')
-parser.add_argument('--is_print_sim_step', type=bool,
-                    default=True,
+parser.add_argument('--is_print_sim_step', type=int,
+                    default=1,
                     help='Flag to print simulation data into terminal.')
 parser.add_argument('--action_manual', type=float,
                     default=[-5, -3], nargs='+',
                     help='Manual control action to be fed constant, system-specific!')
 parser.add_argument('--Nactor', type=int,
-                    default=2,
+                    default=1,
                     help='Horizon length (in steps) for predictive controllers.')
 parser.add_argument('--pred_step_size_multiplier', type=float,
                     default=1.0,
                     help='Size of each prediction step in seconds is a pred_step_size_multiplier multiple of controller sampling time dt.')
 parser.add_argument('--buffer_size', type=int,
-                    default=30,
+                    default=25,
                     help='Size of the buffer (experience replay) for model estimation, agent learning etc.')
 parser.add_argument('--run_obj_struct', type=str,
                     default='quadratic',
@@ -101,10 +97,10 @@ parser.add_argument('--R2_diag', type=float, nargs='+',
                     'Say, if chi = [observation, action], then a bi-quadratic running objective reads chi**2.T diag(R2) chi**2 + chi.T diag(R1) chi, ' +
                     'where diag() is transformation of a vector to a diagonal matrix.')
 parser.add_argument('--Ncritic', type=int,
-                    default=30,
+                    default=25,
                     help='Critic stack size (number of temporal difference terms in critic cost).')
 parser.add_argument('--gamma', type=float,
-                    default=1.0,
+                    default=0.9,
                     help='Discount factor.')
 parser.add_argument('--critic_period_multiplier', type=float,
                     default=1.0,
@@ -133,23 +129,23 @@ parser.add_argument('--actor_struct', type=str,
                     '----quadratic: quadratic; ' +
                     '----quad-nomix: quadratic, no mixed terms.')
 parser.add_argument('--init_robot_pose_x', type=float,
-                    default=0.0,
+                    default=-1.0,
                     help='Initial x-coordinate of the robot pose.')
 parser.add_argument('--init_robot_pose_y', type=float,
-                    default=0.0,
+                    default=-1.0,
                     help='Initial y-coordinate of the robot pose.')
 parser.add_argument('--init_robot_pose_theta', type=float,
-                    default=0.0,
+                    default=1.57,
                     help='Initial orientation angle (in radians) of the robot pose.')
-parser.add_argument('--circle_x', type=float,
-                    default=0.0,
-                    help='X-coordinate of the center of the circle.')
-parser.add_argument('--circle_y', type=float,
-                    default=0.0,
-                    help='Y-coordinate of the center of the circle.')
-parser.add_argument('--circle_sigma', type=float,
-                    default=0.0,
-                    help='Standard deviation (sigma) of the circle.')
+parser.add_argument('--distortion_x', type=float,
+                    default=-0.6,
+                    help='X-coordinate of the center of distortion.')
+parser.add_argument('--distortion_y', type=float,
+                    default=-0.5,
+                    help='Y-coordinate of the center of distortion.')
+parser.add_argument('--distortion_sigma', type=float,
+                    default=0.1,
+                    help='Standard deviation (sigma) of distortion.')
 parser.add_argument('--seed', type=int,
                     default=1,
                     help='Seed for random number generation.')
@@ -159,9 +155,9 @@ args = parser.parse_args()
 seed=args.seed
 print(seed)
 
-xcircle_x = args.circle_x
-ycircle_y = args.circle_y
-circle_sigma = args.circle_sigma
+xdistortion_x = args.distortion_x
+ydistortion_y = args.distortion_y
+distortion_sigma = args.distortion_sigma
 
 x = args.init_robot_pose_x
 y = args.init_robot_pose_y
@@ -172,11 +168,7 @@ while theta > np.pi:
 while theta < -np.pi:
         theta += 2 * np.pi
 
-# Convert `pi` to a number pi
-for k in range(len(args.state_init)):
-    args.state_init[k] = eval( args.state_init[k].replace('pi', str(np.pi)) )
-
-args.state_init = np.array([x, y, theta])
+state_init = np.array([x, y, theta])
 
 args.action_manual = np.array(args.action_manual)
 
@@ -191,7 +183,7 @@ R1 = np.diag(np.array(args.R1_diag))
 R2 = np.diag(np.array(args.R2_diag))
 
 assert args.t1 > args.dt > 0.0
-assert args.state_init.size == dim_state
+assert state_init.size == dim_state
 
 globals().update(vars(args))
 
@@ -267,7 +259,7 @@ my_ctrl_opt_pred = controllers.ControllerOptimalPredictive(dim_input,
                                            run_obj_pars = [R1],
                                            observation_target = [],
                                            state_init=state_init,
-                                           obstacle=[xcircle_x, ycircle_y,circle_sigma],
+                                           obstacle=[xdistortion_x, ydistortion_y,distortion_sigma],
                                            seed=seed)
 
 
@@ -295,7 +287,7 @@ date = datetime.now().strftime("%Y-%m-%d")
 time = datetime.now().strftime("%Hh%Mm%Ss")
 datafiles = [None] * Nruns
 
-data_folder = 'simdata/' + ctrl_mode + "/Init_angle_{}_seed_{}_Nactor_{}".format(str(args.state_init[2]), seed, Nactor)
+data_folder = 'simdata/' + ctrl_mode + "/Init_angle_{}_seed_{}_Nactor_{}".format(str(state_init[2]), seed, Nactor)
 
 if is_log_data:
     pathlib.Path(data_folder).mkdir(parents=True, exist_ok=True) 
@@ -358,7 +350,7 @@ if is_visualization:
                                                   v_max,
                                                   omega_max,
                                                   Nruns,
-                                                  is_print_sim_step, is_log_data, 0, [], [xcircle_x, ycircle_y,circle_sigma]))
+                                                  is_print_sim_step, is_log_data, 0, [], [xdistortion_x, ydistortion_y,distortion_sigma]))
 
     anm = animation.FuncAnimation(my_animator.fig_sim,
                                   my_animator.animate,
