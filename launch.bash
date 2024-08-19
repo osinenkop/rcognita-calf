@@ -22,6 +22,22 @@ distortion_pos_y=-0.5
 distortion_sigma=0.1
 
 ####################################################################################
+ctrl_mode=N_CTRL #N_CTRL, MPC, CALF, SARSA-m
+
+Nruns=1
+
+for ((i=0; i<${#seed[@]}; i++)); do
+
+    echo -e "\033[32m ======================= TEST Number: $((k=$k+1)) ======================= \033[0m"
+
+    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor \
+    --ctrl_mode $ctrl_mode --Nruns $Nruns --init_robot_pose_x $init_robot_pose_x --init_robot_pose_y $init_robot_pose_y \
+    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --distortion_x $distortion_pos_x --distortion_y $distortion_pos_y --distortion_sigma $distortion_sigma \
+    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]}
+    
+done
+
+####################################################################################
 ctrl_mode=CALF #N_CTRL, MPC, CALF, SARSA-m
 
 Nruns=15
@@ -55,27 +71,13 @@ for ((i=0; i<${#seed[@]}; i++)); do
     
 done
 
-####################################################################################
-ctrl_mode=N_CTRL #N_CTRL, MPC, CALF, SARSA-m
-
-Nruns=1
-
-for ((i=0; i<${#seed[@]}; i++)); do
-
-    echo -e "\033[32m ======================= TEST Number: $((k=$k+1)) ======================= \033[0m"
-
-    python3 PRESET_3wrobot_NI.py --dt $dt --Nactor $Nactor \
-    --ctrl_mode $ctrl_mode --Nruns $Nruns --init_robot_pose_x $init_robot_pose_x --init_robot_pose_y $init_robot_pose_y \
-    --init_robot_pose_theta $init_robot_pose_theta --t1 $final_time --distortion_x $distortion_pos_x --distortion_y $distortion_pos_y --distortion_sigma $distortion_sigma \
-    --is_visualization $is_visualization --buffer_size $buffer_size --Ncritic $Ncritic --gamma $gamma --critic_struct $critic_struct --seed ${seed[i]}
-    
-done
 
 ####################################################################################
 ctrl_mode=MPC #N_CTRL, MPC, CALF, SARSA-m
 Nactor=(10 15 20 25 30 35 40 45 50 55 60)
 # Nactor=(25)
 Nruns=1
+gamma=1
 
 for ((i=0; i<${#Nactor[@]}; i++)); do
 

@@ -798,6 +798,11 @@ class ControllerOptimalPredictive:
         """       
         
         time_in_sample = t - self.ctrl_clock
+
+        dist_to_spot = np.sqrt(
+            (observation[0] - self.circle_x) ** 2
+            + (observation[1] - self.circle_y) ** 2
+        )
         
         if time_in_sample >= self.sampling_time: # New sample
             # Update controller's internal clock
@@ -913,13 +918,21 @@ class ControllerOptimalPredictive:
 
             elif self.mode == "N_CTRL":
                 action = self.N_CTRL.pure_loop(observation)
-            
+
             self.action_curr = action
             
-            return action    
+            if dist_to_spot <= 0.1:
+                return [np.clip(action[0], -0.01, 0.01), action[1]]
+            else:
+                return action    
+                
+
     
         else:
-            return self.action_curr
+            if dist_to_spot <= 0.1:
+                return [np.clip(self.action_curr[0], -0.01, 0.01), self.action_curr[1]]
+            else:
+                return self.action_curr
 
 class N_CTRL:
 
